@@ -1,0 +1,5 @@
+# Ignore Python virtual environment
+backend/patlytics-env/
+
+# Ignore Node.js modules
+frontend/node_modules/
