@@ -17,7 +17,6 @@ app = Flask(__name__)
 CORS(app)
 
 
-# Load JSON files
 with open("patents.json", encoding="utf-8") as patents_file:
     patents_data = json.load(patents_file)
 
@@ -103,20 +102,16 @@ def analyze_each_product(claims_text, company_products):
     return results
 
 
-# Endpoint to handle form submissions
 @app.route("/api/infringement-check", methods=["POST"])
 def infringement_check():
-    # Get JSON data from the request
     data = request.json
     patent_id = data.get("patentId")
     company_name = data.get("companyName")
 
-    # Find the patent by ID
     patent = next((p for p in patents_data if p["publication_number"] == patent_id), None)
     if not patent:
         return jsonify({"error": f"Patent ID '{patent_id}' not found"}), 404
 
-    # Find the company by name
     company = next((c for c in products_data if c["name"].lower() == company_name.lower()), None)
     if not company:
         return jsonify({"error": f"Company '{company_name}' not found"}), 404
@@ -131,7 +126,6 @@ def infringement_check():
 
     analysis_id = str(uuid.uuid4())
 
-    # Response
     response = {
         "analysis_id": analysis_id,
         "patent_id": patent_id,
@@ -155,7 +149,6 @@ def get_analysis_history():
 def save_analysis():
     history = load_analysis_history()
 
-    # Get JSON data from the request
     data = request.json
     if not data:
         return jsonify({"error": "No data provided"}), 400
@@ -165,12 +158,11 @@ def save_analysis():
     company_name = data.get("company_name")
     top_infringing_products = data.get("top_infringing_products")
     analysis_date = data.get("analysis_date")
-    
+
     for existing_analysis in history:
         if existing_analysis["analysis_id"] == analysis_id:
             return jsonify({"error": "Analysis has already been saved."}), 400
 
-    # Save analysis to history
     response = {
         "analysis_id": analysis_id,
         "patent_id": patent_id,
