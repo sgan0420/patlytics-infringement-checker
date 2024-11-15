@@ -165,6 +165,10 @@ def save_analysis():
     company_name = data.get("company_name")
     top_infringing_products = data.get("top_infringing_products")
     analysis_date = data.get("analysis_date")
+    
+    for existing_analysis in history:
+        if existing_analysis["analysis_id"] == analysis_id:
+            return jsonify({"error": "Analysis has already been saved."}), 400
 
     # Save analysis to history
     response = {

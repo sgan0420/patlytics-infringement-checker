@@ -1,14 +1,15 @@
 import { useState } from "react";
+import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
 import logo from "./logo.svg";
 import "./App.css";
+import HistoryPage from "./HistoryPage";
 
 const App = () => {
   const [patentId, setPatentId] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [history, setHistory] = useState(null);
-  const [saveStatus, setSaveStatus] = useState(null);
+  const [isAnalysisSaved, setIsAnalysisSaved] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,6 +23,7 @@ const App = () => {
     console.log("Form Data Submitted:", formData);
 
     setLoading(true);
+    setIsAnalysisSaved(false);
 
     try {
       const response = await fetch(
@@ -52,86 +54,98 @@ const App = () => {
         body: JSON.stringify(results),
       });
       const data = await response.json();
-      console.log("Save Analysis Response:", data);
-      setSaveStatus("Analysis saved successfully!");
+
+      if (response.status === 400 && data.error) {
+        console.error("Save failed:", data.error);
+      } else {
+        console.log("Save Analysis Response:", data);
+        setIsAnalysisSaved(true);
+      }
     } catch (error) {
       console.error("Error saving analysis:", error);
-      setSaveStatus("Failed to save analysis.");
     }
   };
 
-  const handleViewHistory = async () => {
-    try {
-      const response = await fetch(
-        "http://127.0.0.1:5000/api/analysis-history",
-        {
-          method: "GET",
-        }
-      );
-      const data = await response.json();
-      console.log("History from Backend:", data);
-      setHistory(data);
-    } catch (error) {
-      console.error("Error fetching history:", error);
-    }
+  const openHistoryPageInNewTab = () => {
+    window.open("/history", "_blank");
   };
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} alt="Patlytics Logo" style={{ width: "200px" }} />
-      </header>
-      <main className="App-main">
-        <form className="App-form" onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="patentId">Patent ID</label>
-            <input
-              type="text"
-              id="patentId"
-              name="patentId"
-              placeholder="Enter Patent ID"
-              value={patentId}
-              onChange={(e) => setPatentId(e.target.value)}
+    <Router>
+      <div className="App">
+        <header className="App-header">
+          <img src={logo} alt="Patlytics Logo" style={{ width: "200px" }} />
+        </header>
+        <main className="App-main">
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <>
+                  <form className="App-form" onSubmit={handleSubmit}>
+                    <div className="form-group">
+                      <label htmlFor="patentId">Patent ID</label>
+                      <input
+                        type="text"
+                        id="patentId"
+                        name="patentId"
+                        placeholder="Enter Patent ID"
+                        value={patentId}
+                        onChange={(e) => setPatentId(e.target.value)}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="companyName">Company Name</label>
+                      <input
+                        type="text"
+                        id="companyName"
+                        name="companyName"
+                        placeholder="Enter Company Name"
+                        value={companyName}
+                        onChange={(e) => setCompanyName(e.target.value)}
+                      />
+                    </div>
+                    <button type="submit" disabled={loading}>
+                      {loading ? "Loading..." : "Analyse"}
+                    </button>
+                  </form>
+
+                  <button
+                    onClick={openHistoryPageInNewTab}
+                    className="button-dark"
+                  >
+                    View History <span className="arrow">&#8599;</span>
+                  </button>
+
+                  {results && !loading && (
+                    <div className="results">
+                      <p>Infringement Analysis</p>
+                      <div className="results-card">
+                        <button
+                          className="button-dark"
+                          onClick={handleSaveAnalysis}
+                          disabled={isAnalysisSaved}
+                        >
+                          {isAnalysisSaved ? (
+                            <span className="done-icon">Saved ✔</span>
+                          ) : (
+                            "Save Analysis"
+                          )}
+                        </button>
+                        <pre>{JSON.stringify(results, null, 2)}</pre>
+                      </div>
+                    </div>
+                  )}
+                </>
+              }
             />
-          </div>
-          <div className="form-group">
-            <label htmlFor="companyName">Company Name</label>
-            <input
-              type="text"
-              id="companyName"
-              name="companyName"
-              placeholder="Enter Company Name"
-              value={companyName}
-              onChange={(e) => setCompanyName(e.target.value)}
-            />
-          </div>
-          <button type="submit" disabled={loading}>
-            {loading ? "Loading..." : "Analyse"}
-          </button>
-        </form>
-        <button className="button-dark" onClick={handleViewHistory}>
-          View History
-        </button>
-        {results && (
-          <div className="results">
-            <p>Infringement Analysiss</p>
-            <div className="results-card">
-              <pre>{JSON.stringify(results, null, 2)}</pre>
-              <button className="button-dark" onClick={handleSaveAnalysis}>
-                Save Analysis
-              </button>
-            </div>
-          </div>
-        )}
-        {saveStatus && <p>{saveStatus}</p>}
-        {history && (
-          <div className="results">
-            <p>Analysis History</p>
-            <pre>{JSON.stringify(history, null, 2)}</pre>
-          </div>
-        )}
-      </main>
-    </div>
+          </Routes>
+          <Routes>
+            <Route path="/history" element={<HistoryPage />} />
+          </Routes>
+        </main>
+      </div>
+    </Router>
   );
 };
 
