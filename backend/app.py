@@ -1,5 +1,4 @@
 import json
-import openai
 import os
 from openai import OpenAI
 from flask import Flask, request, jsonify
@@ -32,9 +31,6 @@ def home():
 
 
 def analyze_infringement_with_openai(claims_text, product_text):
-
-    print(json.dumps({"claims": claims_text, "company_products": product_text}))
-
     try:
         response = client.chat.completions.create(
             model="ft:gpt-4o-mini-2024-07-18:personal:patlytics-patent-test:ATlBDC1p",
@@ -53,6 +49,20 @@ def analyze_infringement_with_openai(claims_text, product_text):
         return json.loads(gpt_response)
     except Exception as e:
         raise RuntimeError(f"OpenAI API error: {str(e)}")
+
+
+def analyze_each_product(claims_text, company_products):
+    results = []
+    for product in company_products:
+        try:
+            analysis_result = analyze_infringement_with_openai(claims_text, product)
+            print(analysis_result["infringement_likelihood"])
+            if not analysis_result["infringement_likelihood"].lower() == "low":
+                results.append({"product_name": product["name"], "analysis_result": analysis_result})
+        except RuntimeError as e:
+            return jsonify({"error": str(e)}), 500
+
+    return results
 
 
 # Endpoint to handle form submissions
@@ -74,10 +84,10 @@ def infringement_check():
         return jsonify({"error": f"Company '{company_name}' not found"}), 404
 
     claims_text = "\n".join([claim["text"] for claim in json.loads(patent["claims"])])
-    product_text = company["products"][0]
+    company_products = company["products"]
 
     try:
-        analysis_result = analyze_infringement_with_openai(claims_text, product_text)
+        infringing_products = analyze_each_product(claims_text, company_products)
     except RuntimeError as e:
         return jsonify({"error": str(e)}), 500
 
@@ -87,7 +97,7 @@ def infringement_check():
         "patent_id": patent_id,
         "company_name": company_name,
         "analysis_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "analysis_result": analysis_result,
+        "top_infriging_products": infringing_products,
     }
 
     return app.response_class(response=json.dumps(response, sort_keys=False), mimetype="application/json")
