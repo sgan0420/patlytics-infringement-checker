@@ -1,0 +1,146 @@
+[
+  {
+    "infringement_likelihood": "High",
+    "relevant_claims": ["1", "2", "3", "20", "21"],
+    "explanation": "The Walmart Shopping App implements several key elements of the patent claims including the direct advertisement-to-list functionality, mobile application integration, and shopping list synchronization. The app's implementation of digital advertisement display and product data handling closely matches the patent's specifications.",
+    "specific_features": [
+      "Direct advertisement-to-list functionality",
+      "Mobile app integration",
+      "Shopping list synchronization",
+      "Digital weekly ads integration",
+      "Product data payload handling"
+    ]
+  },
+  {
+    "infringement_likelihood": "Moderate",
+    "relevant_claims": ["1", "40", "41", "42"],
+    "explanation": "The Walmart+ membership program includes shopping list features that partially implement the patent's claims, particularly regarding list synchronization and deep linking capabilities. While not as complete an implementation as the main Shopping App, it still incorporates key patented elements in its list management functionality.",
+    "specific_features": [
+      "Shopping list synchronization across devices",
+      "Deep linking to product lists",
+      "Advertisement integration in member benefits",
+      "Cloud-based list storage"
+    ]
+  },
+  {
+    "infringement_likelihood": "Low",
+    "relevant_claims": ["1"],
+    "explanation": "The 'Scan & Go' app allows users to add items to a shopping list by scanning products directly, which aligns with generating a digital shopping list on a mobile device. However, it does not involve presenting electronic advertisements or processing user selections of advertisements, as specified in the patent claims.",
+    "specific_features": [
+      "Scanning products to add to shopping list",
+      "Real-time shopping list updates",
+      "Mobile app integration"
+    ]
+  },
+  {
+    "infringement_likelihood": "Low",
+    "relevant_claims": ["1"],
+    "explanation": "Walmart Pay primarily serves as a mobile payment system with shopping list integration. While it involves shopping lists, it does not include presenting electronic advertisements and adding advertised products to the shopping list as specified in the patent claims.",
+    "specific_features": [
+      "Mobile payment processing",
+      "Shopping list integration",
+      "In-app purchase history"
+    ]
+  },
+  {
+    "infringement_likelihood": "Low",
+    "relevant_claims": ["1"],
+    "explanation": "The 'Item Finder' app provides in-store navigation and shopping list features but does not appear to involve presenting electronic advertisements and adding advertised products to the shopping list as described in the patent claims.",
+    "specific_features": [
+      "In-store navigation",
+      "Shopping list management",
+      "Product location assistance"
+    ]
+  },
+  {
+    "infringement_likelihood": "High",
+    "relevant_claims": [
+      "1",
+      "2",
+      "3",
+      "4",
+      "14",
+      "15",
+      "16",
+      "20",
+      "21",
+      "22",
+      "23"
+    ],
+    "explanation": "The Walmart Grocery app includes features that closely align with the patent claims, such as presenting electronic advertisements, detecting user selections, providing options to open a mobile application for adding products to a shopping list, and automatically building shopping lists from ads.",
+    "specific_features": [
+      "Automated list building from ads",
+      "Electronic advertisement presentation",
+      "User selection of advertisements",
+      "Integration with mobile application",
+      "Adding advertised products to shopping list"
+    ]
+  },
+  {
+    "infringement_likelihood": "High",
+    "relevant_claims": [
+      "1",
+      "2",
+      "3",
+      "4",
+      "14",
+      "15",
+      "16",
+      "20",
+      "21",
+      "22",
+      "23"
+    ],
+    "explanation": "The Smart Shopping List app features AI-powered creation of shopping lists from weekly ads, which aligns closely with the patent claims involving generating digital shopping lists from electronic advertisements. It includes presenting advertisements, detecting user interactions, and adding advertised products to a shopping list via a mobile application.",
+    "specific_features": [
+      "AI-powered shopping list creation from ads",
+      "Presentation of electronic advertisements",
+      "User interaction with ads",
+      "Adding advertised products to shopping list",
+      "Mobile app integration"
+    ]
+  },
+  {
+    "infringement_likelihood": "Low",
+    "relevant_claims": ["1"],
+    "explanation": "The 'Store Map Integration' system focuses on organizing shopping lists based on the user's location within the store. It does not involve presenting electronic advertisements or adding advertised products to the shopping list, which are key elements of the patent claims.",
+    "specific_features": [
+      "Location-based shopping list organization",
+      "In-store navigation assistance",
+      "Optimizing shopping routes"
+    ]
+  },
+  {
+    "infringement_likelihood": "High",
+    "relevant_claims": [
+      "1",
+      "2",
+      "3",
+      "4",
+      "14",
+      "15",
+      "16",
+      "20",
+      "21",
+      "22",
+      "23"
+    ],
+    "explanation": "The 'Quick Add from Ads' feature enables users to add items directly from digital advertisements to their shopping list, which closely aligns with the patent claims involving presenting electronic advertisements, detecting user selections, providing options to open a mobile application, and adding advertised products to a shopping list.",
+    "specific_features": [
+      "Adding items from digital advertisements",
+      "User interaction with ads",
+      "Integration with mobile application",
+      "Adding advertised products to shopping list"
+    ]
+  },
+  {
+    "infringement_likelihood": "Low",
+    "relevant_claims": ["1"],
+    "explanation": "The 'List Share' platform enables collaborative creation and sharing of shopping lists among users. It does not involve presenting electronic advertisements or adding advertised products to the shopping list, which are essential elements of the patent claims.",
+    "specific_features": [
+      "Collaborative shopping list creation",
+      "Real-time list sharing",
+      "User collaboration features"
+    ]
+  }
+]
