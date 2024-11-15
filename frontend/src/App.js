@@ -6,12 +6,25 @@ const App = () => {
   const [patentId, setPatentId] = useState("");
   const [companyName, setCompanyName] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form Submitted", { patentId, companyName });
+    const formData = { patentId, companyName };
+    console.log("Form Data Submitted:", formData);
 
-    // Example: Sending the data to the backend (implement in Step 3)
-    // sendToBackend({ patentId, companyName });
+    try {
+      const response = await fetch(
+        "http://127.0.0.1:5000/api/infringement-check",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        }
+      );
+      const data = await response.json();
+      console.log("Response from Backend:", data);
+    } catch (error) {
+      console.error("Error submitting data:", error);
+    }
   };
 
   return (
