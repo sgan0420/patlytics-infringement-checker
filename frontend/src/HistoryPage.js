@@ -22,13 +22,19 @@ const HistoryPage = () => {
   return (
     <div className="results">
       <p>Analysis History</p>
-      <div className="results-card">
-        {history ? (
-          <pre>{JSON.stringify(history, null, 2)}</pre>
+      {history ? (
+        history.length ? (
+          history.map((entry) => (
+            <div key={entry.analysis_id} className="results-card">
+              <pre>{JSON.stringify(entry, null, 2)}</pre>
+            </div>
+          ))
         ) : (
-          <p>Loading history...</p>
-        )}
-      </div>
+          <p>No analysis history found.</p>
+        )
+      ) : (
+        <p>Loading history...</p>
+      )}
     </div>
   );
 };
