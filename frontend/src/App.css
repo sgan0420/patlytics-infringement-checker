@@ -65,6 +65,12 @@ button:hover {
   background-color: rgb(47, 105, 21);
 }
 
+button:disabled {
+  cursor: not-allowed; /* Changes the cursor to indicate the button is not clickable */
+  background-color: #999; /* Changes the background color for the disabled state */
+  color: #ccc; /* Adjust text color for better visibility */
+}
+
 .results p {
   font-size: calc(20px + 1vmin);
   margin-bottom: 15px;

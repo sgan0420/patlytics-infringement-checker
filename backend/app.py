@@ -51,16 +51,35 @@ def analyze_infringement_with_openai(claims_text, product_text):
         raise RuntimeError(f"OpenAI API error: {str(e)}")
 
 
+def validate_analysis_result(result):
+    required_keys = ["infringement_likelihood", "relevant_claims", "explanation", "specific_features"]
+    if not isinstance(result, dict):
+        return False
+    for key in required_keys:
+        if key not in result:
+            return False
+    return True
+
+
 def analyze_each_product(claims_text, company_products):
     results = []
     for product in company_products:
-        try:
-            analysis_result = analyze_infringement_with_openai(claims_text, product)
-            print(analysis_result["infringement_likelihood"])
-            if not analysis_result["infringement_likelihood"].lower() == "low":
-                results.append({"product_name": product["name"], "analysis_result": analysis_result})
-        except RuntimeError as e:
-            return jsonify({"error": str(e)}), 500
+        analysis_result = None
+        attempts = 0
+        max_attempts = 3  # Retry up to 3 times
+        while attempts < max_attempts:
+            try:
+                analysis_result = analyze_infringement_with_openai(claims_text, product)
+                if validate_analysis_result(analysis_result):
+                    if analysis_result["infringement_likelihood"].lower() != "low":
+                        results.append({"product_name": product["name"], "analysis_result": analysis_result})
+                    break  # Valid result, exit attempt loop
+            except RuntimeError as e:
+                print(f"Error analyzing product '{product['name']}' (attempt {attempts + 1}): {e}")
+            attempts += 1
+
+        if attempts == max_attempts and not validate_analysis_result(analysis_result):
+            return {"error": f"Failed to analyze product '{product['name']}' after {max_attempts} retries.", "product_name": product["name"]}
 
     return results
 

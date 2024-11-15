@@ -6,6 +6,7 @@ const App = () => {
   const [patentId, setPatentId] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [results, setResults] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -17,6 +18,8 @@ const App = () => {
 
     const formData = { patentId, companyName };
     console.log("Form Data Submitted:", formData);
+
+    setLoading(true);
 
     try {
       const response = await fetch(
@@ -32,6 +35,8 @@ const App = () => {
       setResults(data);
     } catch (error) {
       console.error("Error submitting data:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -64,7 +69,9 @@ const App = () => {
               onChange={(e) => setCompanyName(e.target.value)}
             />
           </div>
-          <button type="submit">Submit</button>
+          <button type="submit" disabled={loading}>
+            {loading ? "Loading..." : "Submit"}
+          </button>
         </form>
         {results && (
           <div className="results">
