@@ -1,8 +1,16 @@
 import json
-
+import openai
+import os
+from openai import OpenAI
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from datetime import datetime
+from dotenv import load_dotenv
+
+
+load_dotenv()
+api_key = os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=api_key)
 
 
 app = Flask(__name__)
@@ -23,6 +31,30 @@ def home():
     return "Backend is working!"
 
 
+def analyze_infringement_with_openai(claims_text, product_text):
+
+    print(json.dumps({"claims": claims_text, "company_products": product_text}))
+
+    try:
+        response = client.chat.completions.create(
+            model="ft:gpt-4o-mini-2024-07-18:personal:patlytics-patent-test:ATlBDC1p",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are a system designed to return JSON-encoded patent infringement analyses. Please strictly format your response as valid JSON without extra text or commentary.",
+                },
+                {
+                    "role": "user",
+                    "content": json.dumps({"claims": claims_text, "company_products": product_text}),
+                },
+            ],
+        )
+        gpt_response = response.choices[0].message.content
+        return json.loads(gpt_response)
+    except Exception as e:
+        raise RuntimeError(f"OpenAI API error: {str(e)}")
+
+
 # Endpoint to handle form submissions
 @app.route("/api/infringement-check", methods=["POST"])
 def infringement_check():
@@ -41,16 +73,21 @@ def infringement_check():
     if not company:
         return jsonify({"error": f"Company '{company_name}' not found"}), 404
 
+    claims_text = "\n".join([claim["text"] for claim in json.loads(patent["claims"])])
+    product_text = company["products"][0]
+
+    try:
+        analysis_result = analyze_infringement_with_openai(claims_text, product_text)
+    except RuntimeError as e:
+        return jsonify({"error": str(e)}), 500
+
     # Response
     response = {
         "analysis_id": "1",
         "patent_id": patent_id,
         "company_name": company_name,
         "analysis_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "top_infringement_products": [],
-        "overall_risk_assessment": "High",
-        "patent": patent,
-        "company": company,
+        "analysis_result": analysis_result,
     }
 
     return app.response_class(response=json.dumps(response, sort_keys=False), mimetype="application/json")
