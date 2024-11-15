@@ -6,6 +6,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from datetime import datetime
 from dotenv import load_dotenv
+from fuzzywuzzy import process
 
 
 load_dotenv()
@@ -108,13 +109,17 @@ def infringement_check():
     patent_id = data.get("patentId")
     company_name = data.get("companyName")
 
-    patent = next((p for p in patents_data if p["publication_number"] == patent_id), None)
+    patent = next((p for p in patents_data if p["publication_number"].lower() == patent_id.lower()), None)
     if not patent:
         return jsonify({"error": f"Patent ID '{patent_id}' not found"}), 404
 
-    company = next((c for c in products_data if c["name"].lower() == company_name.lower()), None)
-    if not company:
-        return jsonify({"error": f"Company '{company_name}' not found"}), 404
+    all_company_names = [c["name"] for c in products_data]
+    best_match, score = process.extractOne(company_name, all_company_names)
+
+    if score < 85:
+        return jsonify({"error": f"Company '{company_name}' not found. Did you mean '{best_match}'?"}), 404
+
+    company = next((c for c in products_data if c["name"] == best_match), None)
 
     claims_text = "\n".join([claim["text"] for claim in json.loads(patent["claims"])])
     company_products = company["products"]
@@ -129,7 +134,7 @@ def infringement_check():
     response = {
         "analysis_id": analysis_id,
         "patent_id": patent_id,
-        "company_name": company_name,
+        "company_name": best_match,
         "analysis_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "top_infringing_products": infringing_products,
     }
