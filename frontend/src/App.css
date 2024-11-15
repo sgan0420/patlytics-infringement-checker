@@ -17,6 +17,7 @@
 }
 
 .App-main {
+  margin: 40px auto;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -81,4 +82,6 @@ button:hover {
   overflow-x: auto;
   white-space: pre-wrap;
   text-align: left;
+  margin-left: 60px;
+  margin-right: 60px;
 }
