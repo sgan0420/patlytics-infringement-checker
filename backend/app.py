@@ -1,6 +1,7 @@
 import json
 import os
 import uuid
+import re
 from openai import OpenAI
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -28,6 +29,12 @@ with open("company_products.json", encoding="utf-8") as products_file:
 HISTORY_FILE = "analysis_history.json"
 
 
+# Test route
+@app.route("/")
+def home():
+    return "Backend is working!"
+
+
 def load_analysis_history():
     if os.path.exists(HISTORY_FILE):
         try:
@@ -41,12 +48,6 @@ def load_analysis_history():
 def save_analysis_history(history):
     with open(HISTORY_FILE, "w", encoding="utf-8") as file:
         json.dump(history, file, indent=2)
-
-
-# Test route
-@app.route("/")
-def home():
-    return "Backend is working!"
 
 
 def analyze_infringement_with_openai(claims_text, product_text):
@@ -103,8 +104,16 @@ def analyze_each_product(claims_text, company_products):
     return results
 
 
-@app.route("/api/infringement-check", methods=["POST"])
-def infringement_check():
+def normalize_company_name(name):
+    suffixes = ["inc.", "inc", "co.", "co", "corporation", "corporations", "corp.", "corp", "ltd", "limited", "llc", "llp"]
+    normalized_name = name.lower()
+    for suffix in suffixes:
+        normalized_name = re.sub(r'\s*' + re.escape(suffix) + r'\s*$', '', normalized_name)
+    return normalized_name
+
+
+@app.route("/api/analyze-patent-infringement", methods=["POST"])
+def analyze_patent_infringement():
     data = request.json
     patent_id = data.get("patentId")
     company_name = data.get("companyName")
@@ -113,13 +122,12 @@ def infringement_check():
     if not patent:
         return jsonify({"error": f"Patent ID '{patent_id}' not found"}), 404
 
-    all_company_names = [c["name"] for c in products_data]
-    best_match, score = process.extractOne(company_name, all_company_names)
-
-    if score < 85:
-        return jsonify({"error": f"Company '{company_name}' not found. Did you mean '{best_match}'?"}), 404
-
-    company = next((c for c in products_data if c["name"] == best_match), None)
+    normalized_company_name = normalize_company_name(company_name)
+    all_company_names = [normalize_company_name(c["name"]) for c in products_data]
+    best_match, score = process.extractOne(normalized_company_name, all_company_names)
+    company = next((c for c in products_data if normalize_company_name(c["name"]) == best_match), None)
+    if score < 95:
+        return jsonify({"error": f"Company '{company_name}' not found. Did you mean '{company["name"]}'?"}), 404
 
     claims_text = "\n".join([claim["text"] for claim in json.loads(patent["claims"])])
     company_products = company["products"]
@@ -134,7 +142,7 @@ def infringement_check():
     response = {
         "analysis_id": analysis_id,
         "patent_id": patent_id,
-        "company_name": best_match,
+        "company_name": company["name"],
         "analysis_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "top_infringing_products": infringing_products,
     }
@@ -142,7 +150,7 @@ def infringement_check():
     return app.response_class(response=json.dumps(response, sort_keys=False), mimetype="application/json")
 
 
-@app.route("/api/analysis-history", methods=["GET"])
+@app.route("/api/get-analysis-history", methods=["GET"])
 def get_analysis_history():
     history = load_analysis_history()
     if not history:

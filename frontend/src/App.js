@@ -10,12 +10,13 @@ const App = () => {
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
   const [isAnalysisSaved, setIsAnalysisSaved] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const handleSubmit = async (e) => {
+  const onAnalyse = async (e) => {
     e.preventDefault();
 
     if (!patentId || !companyName) {
-      alert("Please fill in both fields");
+      setErrorMessage("Please fill in both input fields");
       return;
     }
 
@@ -24,10 +25,11 @@ const App = () => {
 
     setLoading(true);
     setIsAnalysisSaved(false);
+    setErrorMessage("");
 
     try {
       const response = await fetch(
-        "http://127.0.0.1:5000/api/infringement-check",
+        "http://127.0.0.1:5000/api/analyze-patent-infringement",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -36,15 +38,22 @@ const App = () => {
       );
       const data = await response.json();
       console.log("Response from Backend:", data);
-      setResults(data);
+      if (response.ok) {
+        setResults(data);
+      } else {
+        setErrorMessage(
+          data.error || "An error occurred while analyzing the patent."
+        );
+      }
     } catch (error) {
       console.error("Error submitting data:", error);
+      setErrorMessage("There was a problem with the request.");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSaveAnalysis = async () => {
+  const onSaveAnalysis = async () => {
     if (!results) return;
 
     try {
@@ -55,14 +64,16 @@ const App = () => {
       });
       const data = await response.json();
 
-      if (response.status === 400 && data.error) {
-        console.error("Save failed:", data.error);
-      } else {
+      if (response.ok) {
         console.log("Save Analysis Response:", data);
         setIsAnalysisSaved(true);
+        setErrorMessage("");
+      } else {
+        setErrorMessage(data.error || "Failed to save the analysis.");
       }
     } catch (error) {
       console.error("Error saving analysis:", error);
+      setErrorMessage("There was a problem saving the analysis.");
     }
   };
 
@@ -82,7 +93,7 @@ const App = () => {
               path="/"
               element={
                 <>
-                  <form className="App-form" onSubmit={handleSubmit}>
+                  <form className="App-form" onSubmit={onAnalyse}>
                     <div className="form-group">
                       <label htmlFor="patentId">Patent ID</label>
                       <input
@@ -117,21 +128,29 @@ const App = () => {
                     View History <span className="arrow">&#8599;</span>
                   </button>
 
+                  {errorMessage && (
+                    <div className="error-message">
+                      <p>{errorMessage}</p>
+                    </div>
+                  )}
+
                   {results && !loading && (
                     <div className="results">
                       <p>Infringement Analysis</p>
                       <div className="results-card">
-                        <button
-                          className="button-dark"
-                          onClick={handleSaveAnalysis}
-                          disabled={isAnalysisSaved}
-                        >
-                          {isAnalysisSaved ? (
-                            <span className="done-icon">Saved ✔</span>
-                          ) : (
-                            "Save Analysis"
-                          )}
-                        </button>
+                        {!results["error"] && (
+                          <button
+                            className="button-dark"
+                            onClick={onSaveAnalysis}
+                            disabled={isAnalysisSaved}
+                          >
+                            {isAnalysisSaved ? (
+                              <span className="done-icon">Saved ✔</span>
+                            ) : (
+                              "Save Analysis"
+                            )}
+                          </button>
+                        )}
                         <pre>{JSON.stringify(results, null, 2)}</pre>
                       </div>
                     </div>

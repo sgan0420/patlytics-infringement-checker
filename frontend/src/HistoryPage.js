@@ -7,7 +7,7 @@ const HistoryPage = () => {
     const fetchHistory = async () => {
       try {
         const response = await fetch(
-          "http://127.0.0.1:5000/api/analysis-history"
+          "http://127.0.0.1:5000/api/get-analysis-history"
         );
         const data = await response.json();
         setHistory(data);

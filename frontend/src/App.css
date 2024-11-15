@@ -44,11 +44,17 @@
 }
 
 .form-group input {
-  width: 100%;
+  width: 93%;
   padding: 10px;
   border: 1px solid rgb(80, 160, 40);
   border-radius: 4px;
   font-size: 20px;
+}
+
+.error-message {
+  color: #cf2222;
+  font-size: 20px;
+  margin-top: 10px;
 }
 
 button {
