@@ -86,22 +86,39 @@ def analyze_each_product(claims_text, company_products):
     for product in company_products:
         analysis_result = None
         attempts = 0
-        max_attempts = 3  # Retry up to 3 times
+        max_attempts = 3
         while attempts < max_attempts:
             try:
                 analysis_result = analyze_infringement_with_openai(claims_text, product)
                 if validate_analysis_result(analysis_result):
-                    if analysis_result["infringement_likelihood"].lower() != "low":
-                        results.append({"product_name": product["name"], "analysis_result": analysis_result})
-                    break  # Valid result, exit attempt loop
+                    results.append(
+                        {
+                            "product_name": product["name"],
+                            "infringement_likelihood": analysis_result["infringement_likelihood"],
+                            "relevant_claims": analysis_result["relevant_claims"],
+                            "explanation": analysis_result["explanation"],
+                            "specific_features": analysis_result["specific_features"],
+                        }
+                    )
+                    break
             except RuntimeError as e:
                 print(f"Error analyzing product '{product['name']}' (attempt {attempts + 1}): {e}")
             attempts += 1
 
         if attempts == max_attempts and not validate_analysis_result(analysis_result):
-            return {"error": f"Failed to analyze product '{product['name']}' after {max_attempts} retries.", "product_name": product["name"]}
+            return jsonify({"error": f"Failed to analyze product '{product['name']}' after {max_attempts} retries."}), 500
 
-    return results
+    likelihood_order = {"High": 3, "Moderate": 2, "Low": 1}
+    sorted_results = sorted(
+        results,
+        key=lambda x: (
+            likelihood_order.get(x["infringement_likelihood"], 0),
+            len(x["relevant_claims"]),
+        ),
+        reverse=True,
+    )
+
+    return sorted_results[:2] if len(sorted_results) >= 2 else sorted_results
 
 
 def normalize_company_name(name):
@@ -155,7 +172,7 @@ def get_analysis_history():
     history = load_analysis_history()
     if not history:
         return jsonify({"message": "No analysis history found"})
-    return jsonify(history)
+    return app.response_class(response=json.dumps(history, sort_keys=False), mimetype="application/json")
 
 
 @app.route("/api/save-analysis", methods=["POST"])
@@ -169,8 +186,8 @@ def save_analysis():
     analysis_id = data.get("analysis_id")
     patent_id = data.get("patent_id")
     company_name = data.get("company_name")
-    top_infringing_products = data.get("top_infringing_products")
     analysis_date = data.get("analysis_date")
+    top_infringing_products = data.get("top_infringing_products")
 
     for existing_analysis in history:
         if existing_analysis["analysis_id"] == analysis_id:
