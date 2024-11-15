@@ -1,5 +1,6 @@
 import json
 import os
+import uuid
 from openai import OpenAI
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -22,6 +23,24 @@ with open("patents.json", encoding="utf-8") as patents_file:
 
 with open("company_products.json", encoding="utf-8") as products_file:
     products_data = json.load(products_file)["companies"]
+
+
+HISTORY_FILE = "analysis_history.json"
+
+
+def load_analysis_history():
+    if os.path.exists(HISTORY_FILE):
+        try:
+            with open(HISTORY_FILE, encoding="utf-8") as file:
+                return json.load(file)
+        except json.JSONDecodeError:
+            return []
+    return []
+
+
+def save_analysis_history(history):
+    with open(HISTORY_FILE, "w", encoding="utf-8") as file:
+        json.dump(history, file, indent=2)
 
 
 # Test route
@@ -110,16 +129,56 @@ def infringement_check():
     except RuntimeError as e:
         return jsonify({"error": str(e)}), 500
 
+    analysis_id = str(uuid.uuid4())
+
     # Response
     response = {
-        "analysis_id": "1",
+        "analysis_id": analysis_id,
         "patent_id": patent_id,
         "company_name": company_name,
         "analysis_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "top_infriging_products": infringing_products,
+        "top_infringing_products": infringing_products,
     }
 
     return app.response_class(response=json.dumps(response, sort_keys=False), mimetype="application/json")
+
+
+@app.route("/api/analysis-history", methods=["GET"])
+def get_analysis_history():
+    history = load_analysis_history()
+    if not history:
+        return jsonify({"message": "No analysis history found"})
+    return jsonify(history)
+
+
+@app.route("/api/save-analysis", methods=["POST"])
+def save_analysis():
+    history = load_analysis_history()
+
+    # Get JSON data from the request
+    data = request.json
+    if not data:
+        return jsonify({"error": "No data provided"}), 400
+
+    analysis_id = data.get("analysis_id")
+    patent_id = data.get("patent_id")
+    company_name = data.get("company_name")
+    top_infringing_products = data.get("top_infringing_products")
+    analysis_date = data.get("analysis_date")
+
+    # Save analysis to history
+    response = {
+        "analysis_id": analysis_id,
+        "patent_id": patent_id,
+        "company_name": company_name,
+        "analysis_date": analysis_date,
+        "top_infringing_products": top_infringing_products,
+    }
+
+    history.append(response)
+    save_analysis_history(history)
+
+    return jsonify({"message": "Analysis saved successfully", "saved_analysis": response})
 
 
 if __name__ == "__main__":

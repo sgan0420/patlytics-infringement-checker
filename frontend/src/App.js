@@ -7,6 +7,8 @@ const App = () => {
   const [companyName, setCompanyName] = useState("");
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [history, setHistory] = useState(null);
+  const [saveStatus, setSaveStatus] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -40,6 +42,40 @@ const App = () => {
     }
   };
 
+  const handleSaveAnalysis = async () => {
+    if (!results) return;
+
+    try {
+      const response = await fetch("http://127.0.0.1:5000/api/save-analysis", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(results),
+      });
+      const data = await response.json();
+      console.log("Save Analysis Response:", data);
+      setSaveStatus("Analysis saved successfully!");
+    } catch (error) {
+      console.error("Error saving analysis:", error);
+      setSaveStatus("Failed to save analysis.");
+    }
+  };
+
+  const handleViewHistory = async () => {
+    try {
+      const response = await fetch(
+        "http://127.0.0.1:5000/api/analysis-history",
+        {
+          method: "GET",
+        }
+      );
+      const data = await response.json();
+      console.log("History from Backend:", data);
+      setHistory(data);
+    } catch (error) {
+      console.error("Error fetching history:", error);
+    }
+  };
+
   return (
     <div className="App">
       <header className="App-header">
@@ -70,13 +106,28 @@ const App = () => {
             />
           </div>
           <button type="submit" disabled={loading}>
-            {loading ? "Loading..." : "Submit"}
+            {loading ? "Loading..." : "Analyse"}
           </button>
         </form>
+        <button className="button-dark" onClick={handleViewHistory}>
+          View History
+        </button>
         {results && (
           <div className="results">
-            <p>Infringement Analysis</p>
-            <pre>{JSON.stringify(results, null, 2)}</pre>
+            <p>Infringement Analysiss</p>
+            <div className="results-card">
+              <pre>{JSON.stringify(results, null, 2)}</pre>
+              <button className="button-dark" onClick={handleSaveAnalysis}>
+                Save Analysis
+              </button>
+            </div>
+          </div>
+        )}
+        {saveStatus && <p>{saveStatus}</p>}
+        {history && (
+          <div className="results">
+            <p>Analysis History</p>
+            <pre>{JSON.stringify(history, null, 2)}</pre>
           </div>
         )}
       </main>
