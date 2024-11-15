@@ -5,9 +5,16 @@ import "./App.css";
 const App = () => {
   const [patentId, setPatentId] = useState("");
   const [companyName, setCompanyName] = useState("");
+  const [results, setResults] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!patentId || !companyName) {
+      alert("Please fill in both fields");
+      return;
+    }
+
     const formData = { patentId, companyName };
     console.log("Form Data Submitted:", formData);
 
@@ -22,6 +29,7 @@ const App = () => {
       );
       const data = await response.json();
       console.log("Response from Backend:", data);
+      setResults(data);
     } catch (error) {
       console.error("Error submitting data:", error);
     }
@@ -35,7 +43,7 @@ const App = () => {
       <main className="App-main">
         <form className="App-form" onSubmit={handleSubmit}>
           <div className="form-group">
-            <label htmlFor="patentId">Patent ID:</label>
+            <label htmlFor="patentId">Patent ID</label>
             <input
               type="text"
               id="patentId"
@@ -46,7 +54,7 @@ const App = () => {
             />
           </div>
           <div className="form-group">
-            <label htmlFor="companyName">Company Name:</label>
+            <label htmlFor="companyName">Company Name</label>
             <input
               type="text"
               id="companyName"
@@ -58,6 +66,12 @@ const App = () => {
           </div>
           <button type="submit">Submit</button>
         </form>
+        {results && (
+          <div className="results">
+            <p>Infringement Analysis</p>
+            <pre>{JSON.stringify(results, null, 2)}</pre>
+          </div>
+        )}
       </main>
     </div>
   );

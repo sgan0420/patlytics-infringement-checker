@@ -3,7 +3,7 @@
   flex-direction: column;
   background-color: rgb(15, 20, 5);
   min-height: 100vh;
-  font-size: calc(20px + 2vmin);
+  font-size: calc(20px + 1vmin);
   color: white;
 }
 
@@ -13,7 +13,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
+  font-size: calc(20px + 1vmin);
 }
 
 .App-main {
@@ -62,4 +62,23 @@ button {
 
 button:hover {
   background-color: rgb(47, 105, 21);
+}
+
+.results p {
+  font-size: calc(20px + 1vmin);
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.results pre {
+  margin: 20px auto;
+  padding: 20px;
+  background-color: rgb(30, 35, 20);
+  border-radius: 10px;
+  font-size: 18px;
+  font-family: "Courier New", Courier, monospace;
+  color: white;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  text-align: left;
 }
