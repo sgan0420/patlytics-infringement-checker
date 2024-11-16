@@ -1,0 +1,24 @@
+version: "3.8"
+
+services:
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    environment:
+      - FLASK_ENV=development
+    depends_on:
+      - frontend
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      - REACT_APP_API_URL=http://backend:5000
