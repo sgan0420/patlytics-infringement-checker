@@ -4,7 +4,7 @@ import logo from "./logo.svg";
 import "./App.css";
 import HistoryPage from "./HistoryPage";
 
-const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:5000";
+const apiUrl = process.env.REACT_APP_API_URL;
 
 const App = () => {
   const [patentId, setPatentId] = useState("");

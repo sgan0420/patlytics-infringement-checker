@@ -1,4 +1,3 @@
-# Exclude the following files and directories
 .git
 __pycache__
 *.pyc
