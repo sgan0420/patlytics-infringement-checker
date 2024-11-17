@@ -16,7 +16,7 @@ The **Patlytics Infringement Checker** is a web-based application designed to an
 
 You can run the application locally using Docker Compose, referring to the setup instructions below.
 
-Alternatively, access the hosted version at [https://patlytics-infringement-checker-frontend.onrender.com/history](https://patlytics-infringement-checker-frontend.onrender.com/history). Be aware that the hosted version may have a slightly longer loading time due to free hosting constraints.
+Alternatively, access the hosted version at [https://patlytics-infringement-checker-frontend.onrender.com](https://patlytics-infringement-checker-frontend.onrender.com). Be aware that the hosted version may have a slightly longer loading time due to free hosting constraints.
 
 > Note: The databases for the local and hosted versions are separate and do not share data.
 
