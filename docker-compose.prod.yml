@@ -2,22 +2,20 @@ services:
   backend:
     build:
       context: ./backend
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile.prod
     ports:
       - "5000:5000"
     env_file:
       - .env
     environment:
-      - FLASK_ENV=development
+      - FLASK_ENV=production
 
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile.dev
-      args:
-        REACT_APP_API_URL: http://localhost:5000
+      dockerfile: Dockerfile.prod
     ports:
-      - "3000:3000"
+      - "80:80"
     env_file:
       - .env
     depends_on:
