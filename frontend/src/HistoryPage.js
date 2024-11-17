@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
 
+const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:5000";
+
 const HistoryPage = () => {
   const [history, setHistory] = useState(null);
 
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const response = await fetch(
-          "http://backend:5000/api/get-analysis-history"
-        );
+        const response = await fetch(`${apiUrl}/api/get-analysis-history`);
         const data = await response.json();
         setHistory(data);
       } catch (error) {

@@ -1,6 +1,12 @@
 # Use an official Node.js image to build the React app
 FROM node:16
 
+# Build-time variable
+ARG REACT_APP_API_URL
+
+# Set environment variable for the build
+ENV REACT_APP_API_URL=${REACT_APP_API_URL}
+
 # Set the working directory inside the container
 WORKDIR /app
 

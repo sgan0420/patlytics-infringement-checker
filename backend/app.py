@@ -10,9 +10,12 @@ from dotenv import load_dotenv
 from fuzzywuzzy import process
 
 
-load_dotenv()
-api_key = os.getenv("OPENAI_API_KEY")
+api_key = os.environ.get('OPENAI_API_KEY')
 client = OpenAI(api_key=api_key)
+
+
+if not api_key:
+    raise ValueError("OPENAI_API_KEY is not set in the environment variables.")
 
 
 app = Flask(__name__)
@@ -144,7 +147,7 @@ def analyze_patent_infringement():
     best_match, score = process.extractOne(normalized_company_name, all_company_names)
     company = next((c for c in products_data if normalize_company_name(c["name"]) == best_match), None)
     if score < 95:
-        return jsonify({"error": f"Company '{company_name}' not found. Did you mean '{company["name"]}'?"}), 404
+        return jsonify({"error": f"Company '{company_name}' not found. Did you mean '{company['name']}'?"}), 404
 
     claims_text = "\n".join([claim["text"] for claim in json.loads(patent["claims"])])
     company_products = company["products"]
@@ -208,4 +211,5 @@ def save_analysis():
 
 
 if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=5000)
     app.run(debug=True)

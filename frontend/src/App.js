@@ -4,6 +4,8 @@ import logo from "./logo.svg";
 import "./App.css";
 import HistoryPage from "./HistoryPage";
 
+const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:5000";
+
 const App = () => {
   const [patentId, setPatentId] = useState("");
   const [companyName, setCompanyName] = useState("");
@@ -29,7 +31,7 @@ const App = () => {
 
     try {
       const response = await fetch(
-        "http://backend:5000/api/analyze-patent-infringement",
+        `${apiUrl}/api/analyze-patent-infringement`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -57,7 +59,7 @@ const App = () => {
     if (!results) return;
 
     try {
-      const response = await fetch("http://backend:5000/api/save-analysis", {
+      const response = await fetch(`${apiUrl}/api/save-analysis`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(results, null, 2),
