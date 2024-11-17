@@ -160,8 +160,6 @@ const App = () => {
                 </>
               }
             />
-          </Routes>
-          <Routes>
             <Route path="/history" element={<HistoryPage />} />
           </Routes>
         </main>
