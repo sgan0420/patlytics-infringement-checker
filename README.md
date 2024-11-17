@@ -1,5 +1,7 @@
 # Patlytics Infringement Checker
 
+Prepared by Shijie Gan (shijiegan.gs@gmail.com).
+
 ## Overview
 
 The **Patlytics Infringement Checker** is a web-based application designed to analyze patent claims and detect potential infringements efficiently.
@@ -12,11 +14,11 @@ The **Patlytics Infringement Checker** is a web-based application designed to an
 
 ## Running the Application
 
-You can run the application locally using Docker Compose referring to the setup instructions below.
+You can run the application locally using Docker Compose, referring to the setup instructions below.
 
-Alternatively, access the hosted version at [https://patlytics-infringement-checker-frontend.onrender.com/history](https://patlytics-infringement-checker-frontend.onrender.com/history).
+Alternatively, access the hosted version at [https://patlytics-infringement-checker-frontend.onrender.com/history](https://patlytics-infringement-checker-frontend.onrender.com/history). Be aware that the hosted version may have a slightly longer loading time due to free hosting constraints.
 
-> Note: The hosted version may have limited availability due to free hosting constraints.
+> Note: The databases for the local and hosted versions are separate and do not share data.
 
 ## Setup Instructions
 
