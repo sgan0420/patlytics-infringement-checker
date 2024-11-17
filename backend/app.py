@@ -8,6 +8,8 @@ from flask_cors import CORS
 from datetime import datetime
 from dotenv import load_dotenv
 from fuzzywuzzy import process
+from pymongo import MongoClient
+from collections import OrderedDict
 
 
 api_key = os.environ.get('OPENAI_API_KEY')
@@ -18,8 +20,17 @@ if not api_key:
     raise ValueError("OPENAI_API_KEY is not set in the environment variables.")
 
 
+MONGO_URI = os.getenv("MONGO_URI", "mongodb://mongodb:27017/patlytics")
+mongo_client = MongoClient(MONGO_URI)
+db = mongo_client["patlytics"]
+collection = db["analysis_history"]
+
+
 app = Flask(__name__)
 CORS(app)
+
+
+app.config["JSON_SORT_KEYS"] = False
 
 
 with open("patents.json", encoding="utf-8") as patents_file:
@@ -39,18 +50,18 @@ def home():
 
 
 def load_analysis_history():
-    if os.path.exists(HISTORY_FILE):
-        try:
-            with open(HISTORY_FILE, encoding="utf-8") as file:
-                return json.load(file)
-        except json.JSONDecodeError:
-            return []
-    return []
+    try:
+        return list(collection.find({}, {"_id": 0}))
+    except Exception as e:
+        print(f"Error loading analysis history: {e}")
+        return []
 
 
-def save_analysis_history(history):
-    with open(HISTORY_FILE, "w", encoding="utf-8") as file:
-        json.dump(history, file, indent=2)
+def save_analysis_history(history_entry):
+    try:
+        collection.insert_one(history_entry)
+    except Exception as e:
+        print(f"Error saving analysis history: {e}")
 
 
 def analyze_infringement_with_openai(claims_text, product_text):
@@ -159,7 +170,7 @@ def analyze_patent_infringement():
 
     analysis_id = str(uuid.uuid4())
 
-    response = {
+    analysis_result = {
         "analysis_id": analysis_id,
         "patent_id": patent_id,
         "company_name": company["name"],
@@ -167,7 +178,7 @@ def analyze_patent_infringement():
         "top_infringing_products": infringing_products,
     }
 
-    return app.response_class(response=json.dumps(response, sort_keys=False), mimetype="application/json")
+    return app.response_class(response=json.dumps(analysis_result, sort_keys=False), mimetype="application/json")
 
 
 @app.route("/api/get-analysis-history", methods=["GET"])
@@ -175,41 +186,40 @@ def get_analysis_history():
     history = load_analysis_history()
     if not history:
         return jsonify({"message": "No analysis history found"})
-    return app.response_class(response=json.dumps(history, sort_keys=False), mimetype="application/json")
+
+    ordered_history = []
+    for entry in history:
+        ordered_entry = OrderedDict(
+            [
+                ("analysis_id", entry["analysis_id"]),
+                ("patent_id", entry["patent_id"]),
+                ("company_name", entry["company_name"]),
+                ("analysis_date", entry["analysis_date"]),
+                ("top_infringing_products", entry["top_infringing_products"]),
+            ]
+        )
+        ordered_history.append(ordered_entry)
+
+    return app.response_class(response=json.dumps(ordered_history, sort_keys=False), mimetype="application/json")
 
 
 @app.route("/api/save-analysis", methods=["POST"])
 def save_analysis():
-    history = load_analysis_history()
-
     data = request.json
     if not data:
         return jsonify({"error": "No data provided"}), 400
 
     analysis_id = data.get("analysis_id")
-    patent_id = data.get("patent_id")
-    company_name = data.get("company_name")
-    analysis_date = data.get("analysis_date")
-    top_infringing_products = data.get("top_infringing_products")
 
-    for existing_analysis in history:
-        if existing_analysis["analysis_id"] == analysis_id:
-            return jsonify({"error": "Analysis has already been saved."}), 400
+    existing_analysis = collection.find_one({"analysis_id": analysis_id})
+    if existing_analysis:
+        return jsonify({"error": "Analysis has already been saved."}), 400
 
-    response = {
-        "analysis_id": analysis_id,
-        "patent_id": patent_id,
-        "company_name": company_name,
-        "analysis_date": analysis_date,
-        "top_infringing_products": top_infringing_products,
-    }
+    save_analysis_history(data)
+    data.pop('_id', None)
 
-    history.append(response)
-    save_analysis_history(history)
-
-    return jsonify({"message": "Analysis saved successfully", "saved_analysis": response})
+    return jsonify({"message": "Analysis saved successfully", "saved_analysis": data})
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000)
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
