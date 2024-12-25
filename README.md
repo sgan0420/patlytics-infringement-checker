@@ -1,4 +1,4 @@
-# Patent Infringement Checker
+# Patlytics Infringement Checker
 
 Prepared by Shijie Gan (shijiegan.gs@gmail.com).
 
